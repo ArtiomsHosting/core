@@ -1,0 +1,49 @@
+{
+    "name": "core",
+    "version": "0.0.0-pre1",
+    "description": "The core server is a backend service for ArtiomsHosting to manage user authentication",
+    "main": "dist/index.js",
+    "dependencies": {
+        "axios": "^1.7.9",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "helmet": "^8.0.0",
+        "undici-types": "^6.20.0"
+    },
+    "scripts": {
+        "start": "tsup && cross-env NODE_ENV=production node .",
+        "dev": "tsup && cross-env NODE_ENV=development node .",
+        "build": "tsup --silent false",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ArtiomsHosting/core.git"
+    },
+    "keywords": [
+        "backend",
+        "authserver",
+        "auth",
+        "api",
+        "rest",
+        "ah",
+        "artiomshosting",
+        "express",
+        "prisma",
+        "typescript"
+    ],
+    "author": "JustArtiom",
+    "license": "GPL-3.0-or-later",
+    "bugs": {
+        "url": "https://github.com/ArtiomsHosting/core/issues"
+    },
+    "homepage": "https://github.com/ArtiomsHosting/core#readme",
+    "devDependencies": {
+        "@types/express": "^5.0.0",
+        "@types/node": "^22.10.5",
+        "cross-env": "^7.0.3",
+        "tsup": "^8.3.5",
+        "typescript": "^5.7.3"
+    }
+}
