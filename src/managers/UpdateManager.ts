@@ -18,7 +18,9 @@ export default class UpdateManager {
     }
 
     update = async () => {
-        const output = await runCmd(`git pull`);
+        const output = await runCmd(
+            `git pull ${this.remoteName} ${this.branch}`
+        );
         return output;
     };
 
