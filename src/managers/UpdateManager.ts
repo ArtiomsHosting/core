@@ -15,6 +15,17 @@ export default class UpdateManager {
         this.remoteName = params.remoteName || "origin";
         this.authToken = params.authToken;
         this.updateCheckInterval = params.updateCheckInterval;
+
+        if (this.updateCheckInterval && params.autoUpdate) {
+            setInterval(async () => {
+                if (await this.isUpToDate()) return;
+                console.log("New update detected! Updating ...");
+                await this.update();
+                await this.updateDependencies();
+                console.log("Update complete. Shutting down.");
+                process.exit(0);
+            }, this.updateCheckInterval);
+        }
     }
 
     update = async () => {
