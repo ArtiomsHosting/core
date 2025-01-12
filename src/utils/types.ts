@@ -14,6 +14,10 @@ export interface UpdateManagerParams {
     remoteName?: string;
 }
 
+export interface FileRouterParams {
+    path: string;
+}
+
 export type JoiSchemaToType<T> = T extends Joi.StringSchema
     ? string
     : T extends Joi.NumberSchema

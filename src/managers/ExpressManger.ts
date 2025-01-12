@@ -1,14 +1,19 @@
 import express, { Express } from "express";
 import { ExpressManagerParams } from "~/utils/types";
+import FileRouter from "./FileRouter";
 
 export default class ExpressManager {
     app: Express;
     port: number | string;
     isListening: boolean = false;
+    fileRouter: FileRouter;
 
     constructor(params: ExpressManagerParams) {
         this.app = express();
         this.port = params.port;
+        this.fileRouter = new FileRouter({
+            path: "src/routes",
+        });
     }
 
     registerRoutes = () => {};
