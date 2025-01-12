@@ -20,7 +20,7 @@ const express = new ExpressManager({
 (async () => {
     if (process.env?.GITHUB_AUTO_UPDATE == "true") {
         console.log("Checking for updates");
-        await updateManager.update().then(console.log).catch(console.error);
+        await updateManager.update(console.log);
     }
 
     express.registerRoutes();

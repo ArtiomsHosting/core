@@ -20,34 +20,28 @@ export default class UpdateManager {
 
         if (this.updateCheckInterval && params.autoUpdate) {
             setInterval(async () => {
-                const [data, error] = await tryCatch(this.update());
-                if (data == "Running up to date" || error) return;
-                console.log("New Update Detected has been aplied");
-                console.log(data);
-                process.exit(0);
+                await tryCatch(this.update(console.log));
             }, this.updateCheckInterval);
         }
     }
 
-    update = async () => {
+    update = async (cb?: (m: string) => void) => {
         const [isUpToDate, error] = await tryCatch(this.isUpToDate());
         if (error) throw new Error(`Error fetching cloud signature. ${error}`);
         if (isUpToDate) return "Running up to date";
+        if (cb) cb("New update detected. Installing...");
 
         const [updateData, error1] = await tryCatch(this.updateCode());
         if (error1) throw new Error(`Error pulling the code. ${error1}`);
         if (!updateData.includes("Updating")) return "Running up to date";
+        if (cb) cb(updateData);
+        if (cb) cb("Updated the source code. Updating dependencies...");
 
         const [updateDeps, error2] = await tryCatch(this.updateDependencies());
         if (error2) throw new Error(`Error updating dependencies. ${error2}`);
+        if (cb) cb(updateDeps);
 
-        console.log(
-            "Logs:\n\n" +
-                updateData +
-                "\n\n" +
-                updateDeps +
-                "\n\nUpdate successful, shutting down"
-        );
+        console.log("Successful Update. Exiting the program");
         process.exit(0);
     };
 
