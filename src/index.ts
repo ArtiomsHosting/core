@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
+
 import ExpressManager from "~/managers/ExpressManger";
 import UpdateManager from "./managers/UpdateManager";
 
@@ -17,21 +18,11 @@ const express = new ExpressManager({
 });
 
 (async () => {
-    console.log("Checking for updates");
-    const isUpToDate = await updateManager.isUpToDate();
-    if (isUpToDate) {
-        console.log("Program is up to date");
-    } else {
-        console.log("\nUpdating ... ");
-        const updateData = await updateManager.update();
-        console.log(updateData);
-        console.log("\nUpdating dependencies ...");
-        const updateDepsData = await updateManager.updateDependencies();
-        console.log(updateDepsData);
-
-        console.log("\nUpdate complete, exiting the program");
-        process.exit(0);
+    if (process.env?.GITHUB_AUTO_UPDATE == "true") {
+        console.log("Checking for updates");
+        await updateManager.update().then(console.log).catch(console.error);
     }
-})();
 
-// express.listen().then(console.log);
+    express.registerRoutes();
+    express.listen().then(console.log);
+})();

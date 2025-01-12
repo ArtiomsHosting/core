@@ -1,6 +1,7 @@
 import { UpdateManagerParams } from "~/utils/types";
 import axios from "axios";
 import runCmd from "~/utils/cmd";
+import tryCatch from "~/utils/tryCatch";
 
 export default class UpdateManager {
     repository: string;
@@ -8,6 +9,7 @@ export default class UpdateManager {
     authToken: string | undefined;
     updateCheckInterval: number;
     remoteName: string;
+    currentCommitSign: string | undefined;
 
     constructor(params: UpdateManagerParams) {
         this.repository = params.repository;
@@ -29,6 +31,27 @@ export default class UpdateManager {
     }
 
     update = async () => {
+        const [isUpToDate, error] = await tryCatch(this.isUpToDate());
+        if (error) throw new Error(`Error fetching cloud signature. ${error}`);
+        if (isUpToDate) return "Running up to date";
+
+        const [updateData, error1] = await tryCatch(this.updateCode());
+        if (error1) throw new Error(`Error pulling the code. ${error1}`);
+        if (!updateData.includes("Updating")) return "Running up to date";
+
+        const [updateDeps, error2] = await tryCatch(this.updateDependencies());
+        if (error2) throw new Error(`Error updating dependencies. ${error2}`);
+
+        return (
+            "Logs:\n\n" +
+            updateData +
+            "\n\n" +
+            updateDeps +
+            "\n\nUpdate successfull, shutting down."
+        );
+    };
+
+    updateCode = async () => {
         const output = await runCmd(
             `git pull ${this.remoteName} ${this.branch}`
         );
@@ -55,8 +78,9 @@ export default class UpdateManager {
         );
 
         const latestCommit = response.data.commit.sha;
-        const currentCommit = await runCmd("git rev-parse HEAD");
+        this.currentCommitSign =
+            this.currentCommitSign || (await runCmd("git rev-parse HEAD"));
 
-        return latestCommit == currentCommit;
+        return latestCommit == this.currentCommitSign;
     };
 }

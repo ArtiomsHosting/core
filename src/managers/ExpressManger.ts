@@ -11,6 +11,8 @@ export default class ExpressManager {
         this.port = params.port;
     }
 
+    registerRoutes = () => {};
+
     listen = () =>
         new Promise<string>((resolve, reject) => {
             const server = this.app.listen(this.port, () => {
