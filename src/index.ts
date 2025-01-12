@@ -23,6 +23,6 @@ const express = new ExpressManager({
         await updateManager.update(console.log).then(console.log);
     }
 
-    express.registerRoutes();
+    express.registerRoutes(console.log);
     express.listen().then(console.log);
 })();

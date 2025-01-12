@@ -11,4 +11,6 @@ export const preHandler: APIHandler[] = [];
 
 export const handler: APIHandler<{
     validationSchema: typeof validationSchema;
-}> = (req, res, next) => {};
+}> = (req, res, next) => {
+    res.send({ message: "Hello world" });
+};

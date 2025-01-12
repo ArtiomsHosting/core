@@ -12,11 +12,22 @@ export default class ExpressManager {
         this.app = express();
         this.port = params.port;
         this.fileRouter = new FileRouter({
-            path: "src/routes",
+            path: "dist/routes",
         });
     }
 
-    registerRoutes = () => {};
+    registerRoutes = (cb?: (m: string) => any) => {
+        const endpoints = this.fileRouter.build().sort().getEndpoints();
+
+        for (let endpoint of endpoints) {
+            if (cb) cb(`Registering ${endpoint.route}`);
+            this.app[endpoint.method](
+                endpoint.route,
+                ...endpoint.preHandlers,
+                endpoint.handler
+            );
+        }
+    };
 
     listen = () =>
         new Promise<string>((resolve, reject) => {
