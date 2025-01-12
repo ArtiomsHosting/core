@@ -20,11 +20,10 @@ export default class UpdateManager {
 
         if (this.updateCheckInterval && params.autoUpdate) {
             setInterval(async () => {
-                if (await this.isUpToDate()) return;
-                console.log("New update detected! Updating ...");
-                await this.update();
-                await this.updateDependencies();
-                console.log("Update complete. Shutting down.");
+                const [data, error] = await tryCatch(this.update());
+                if (data == "Running up to date" || error) return;
+                console.log("New Update Detected has been aplied");
+                console.log(data);
                 process.exit(0);
             }, this.updateCheckInterval);
         }
@@ -42,13 +41,14 @@ export default class UpdateManager {
         const [updateDeps, error2] = await tryCatch(this.updateDependencies());
         if (error2) throw new Error(`Error updating dependencies. ${error2}`);
 
-        return (
+        console.log(
             "Logs:\n\n" +
-            updateData +
-            "\n\n" +
-            updateDeps +
-            "\n\nUpdate successfull, shutting down."
+                updateData +
+                "\n\n" +
+                updateDeps +
+                "\n\nUpdate successful, shutting down"
         );
+        process.exit(0);
     };
 
     updateCode = async () => {
