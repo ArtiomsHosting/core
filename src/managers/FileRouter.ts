@@ -1,12 +1,12 @@
 import fs from "fs";
 import path from "path";
-import { APIHandler, FileRouterParams } from "~/utils/types";
+import { ApiHandler, FileRouterParams } from "~/utils/types";
 
 export interface FileObject {
     route: string;
     method: FileRouter["validMethods"][number];
-    preHandlers: APIHandler[];
-    handler: APIHandler;
+    preHandlers: ApiHandler[];
+    handler: ApiHandler;
 }
 
 export default class FileRouter {
