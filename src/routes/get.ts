@@ -1,16 +1,16 @@
 import Joi from "joi";
-import { APIHandler } from "~/utils/types";
+import { validate } from "~/middlewares/validate";
+import { ApiHandler } from "~/utils/types";
 
 const validationSchema = {
-    body: {
-        test: Joi.string().required(),
+    query: {
+        nr: Joi.number().required().min(5).max(30),
+        is: Joi.boolean(),
     },
 };
 
-export const preHandler: APIHandler[] = [];
+export const preHandlers = [validate(validationSchema)] as const;
 
-export const handler: APIHandler<{
-    validationSchema: typeof validationSchema;
-}> = (req, res, next) => {
-    res.send({ message: "Hello world" });
+export const handler: ApiHandler<typeof preHandlers> = (req, res, next) => {
+    res.send({ message: req.query.nr, is: req.query.is });
 };

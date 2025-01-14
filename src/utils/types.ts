@@ -18,59 +18,41 @@ export interface FileRouterParams {
     path: string;
 }
 
-export type JoiSchemaToType<T> = T extends Joi.StringSchema
+export type ParseJoiType<T> = T extends Joi.StringSchema<any>
     ? string
-    : T extends Joi.NumberSchema
+    : T extends Joi.NumberSchema<any>
     ? number
-    : T extends Joi.BooleanSchema
+    : T extends Joi.BooleanSchema<any>
     ? boolean
-    : T extends Joi.ArraySchema
-    ? unknown[]
-    : T extends Joi.ObjectSchema<infer R>
-    ? { [K in keyof R]: JoiSchemaToType<R[K]> }
-    : unknown;
+    : T extends Joi.ArraySchema<any>
+    ? any[]
+    : T extends Joi.ObjectSchema<any>
+    ? { [K in keyof T]: ParseJoiType<T[K]> }
+    : never;
 
-export type ParseSchema<
-    S extends {
-        body?: Record<string, Joi.Schema>;
-        param?: Record<string, Joi.Schema>;
-        query?: Record<string, Joi.Schema>;
-    }
-> = {
-    body: S["body"] extends Record<string, Joi.Schema>
-        ? { [K in keyof S["body"]]: JoiSchemaToType<S["body"][K]> }
-        : {};
-    param: S["param"] extends Record<string, Joi.Schema>
-        ? { [K in keyof S["param"]]: JoiSchemaToType<S["param"][K]> }
-        : {};
-    query: S["query"] extends Record<string, Joi.Schema>
-        ? { [K in keyof S["query"]]: JoiSchemaToType<S["query"][K]> }
-        : {};
+export type ParseSchema<T> = {
+    [K in keyof T]: T[K] extends Joi.Schema
+        ? ParseJoiType<T[K]>
+        : T[K] extends object
+        ? ParseSchema<T[K]>
+        : T[K];
 };
 
-export interface APIHandlerOptions {
-    addon?: any;
-    validationSchema?: {
-        body?: Record<string, Joi.Schema>;
-        param?: Record<string, Joi.Schema>;
-        query?: Record<string, Joi.Schema>;
-    };
-}
+export type RequestAfterMiddlewares<T extends readonly any[]> =
+    T extends readonly [infer First, ...infer Rest]
+        ? First extends (
+              req: infer Req,
+              res: Response,
+              next: NextFunction
+          ) => void
+            ? Rest extends readonly []
+                ? Req
+                : RequestAfterMiddlewares<Rest> & Req
+            : never
+        : never;
 
-export type APIHandler<T extends APIHandlerOptions = {}> = (
-    req: (T["addon"] extends Record<string, any> ? T["addon"] : {}) &
-        Request<
-            T["validationSchema"] extends { param: any }
-                ? ParseSchema<T["validationSchema"]>["param"]
-                : any,
-            any,
-            T["validationSchema"] extends { body: any }
-                ? ParseSchema<T["validationSchema"]>["body"]
-                : any,
-            T["validationSchema"] extends { query: any }
-                ? ParseSchema<T["validationSchema"]>["query"]
-                : any
-        >,
+export type ApiHandler<T extends readonly any[] = []> = (
+    req: T extends [] ? Request : RequestAfterMiddlewares<T>,
     res: Response,
     next: NextFunction
 ) => any;

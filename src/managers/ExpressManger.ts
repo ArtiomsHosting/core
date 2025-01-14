@@ -1,6 +1,8 @@
 import express, { Express } from "express";
 import { ExpressManagerParams } from "~/utils/types";
 import FileRouter from "./FileRouter";
+import { errorHandler } from "~/middlewares/errorHandler";
+import "express-async-errors";
 
 export default class ExpressManager {
     app: Express;
@@ -27,6 +29,8 @@ export default class ExpressManager {
                 endpoint.handler
             );
         }
+
+        this.app.use(errorHandler);
     };
 
     listen = () =>

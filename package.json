@@ -8,6 +8,7 @@
         "cors": "^2.8.5",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
+        "express-async-errors": "^3.1.1",
         "helmet": "^8.0.0",
         "joi": "^17.13.3",
         "undici-types": "^6.20.0"
