@@ -13,6 +13,7 @@ export const handler: ApiHandler = async (req, res, next) => {
         version: pjson.version,
         commit_name: commit?.commit_name,
         commit_hash: commit?.hash,
+        branch: process.env.GITHUB_BRANCH,
         author: pjson.author,
         npm_version: await runCmd("npm --version"),
         node_version: await runCmd("node --version"),
