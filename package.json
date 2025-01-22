@@ -21,9 +21,9 @@
         "undici-types": "^6.20.0"
     },
     "scripts": {
-        "start": "tsup && cross-env NODE_ENV=production node .",
-        "dev": "tsup && cross-env NODE_ENV=development node .",
-        "build": "tsup --silent false",
+        "start": "npx tsup && cross-env NODE_ENV=production node .",
+        "dev": "npx tsup && cross-env NODE_ENV=development node .",
+        "build": "npx tsup --silent false",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
