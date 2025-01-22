@@ -48,6 +48,7 @@ export const handler: ApiHandler<typeof preHandlers> = async (req, res) => {
         const tmp_user = await User.findByEmail(email);
         if (!tmp_user || !(await tmp_user.checkPassword(password)))
             throw new UnauthorizedError({ message: "Wrong email or password" });
+        user = tmp_user;
 
         const mfas = await MFA.findByUserId(tmp_user.id);
         const mf_email = mfas.find((x) => x.type == "EMAIL");
@@ -122,8 +123,6 @@ export const handler: ApiHandler<typeof preHandlers> = async (req, res) => {
                 });
             }
         }
-
-        user = tmp_user;
     } else if (provider && code) {
         /** @todo */
         throw new NotImplementedError();
