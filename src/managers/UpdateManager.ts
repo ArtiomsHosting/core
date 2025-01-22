@@ -2,6 +2,7 @@ import { UpdateManagerParams } from "~/utils/types";
 import axios from "axios";
 import runCmd from "~/utils/cmd";
 import tryCatch from "~/utils/tryCatch";
+import { readFileSync } from "fs";
 
 export default class UpdateManager {
     repository: string;
@@ -76,4 +77,23 @@ export default class UpdateManager {
             return true;
         }
     };
+
+    static getCurrentCommit = async () => {
+        let hash: string | undefined = undefined;
+        let commit_name: string | undefined = undefined;
+        const data = await runCmd('git log -1 --pretty=format:"%H %s"');
+        if (data) {
+            const darray = data.split(" ");
+
+            hash = darray.shift();
+            commit_name = darray.join(" ");
+        }
+
+        return { hash, commit_name };
+    };
+
+    static getProjectPackageJSON() {
+        const packageJson = JSON.parse(readFileSync("./package.json", "utf-8"));
+        return packageJson;
+    }
 }
