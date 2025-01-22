@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, request, Request, Response } from "express";
 import Joi from "joi";
 import { Mail, User } from "~/lib";
 import { MFA } from "~/lib/MFA";
@@ -7,6 +7,7 @@ import { ParseSchema } from "~/utils/types";
 import speakeasy from "speakeasy";
 import { randomInt } from "~/utils/gen";
 import { expiresAt, toMs } from "~/utils/time";
+import { RateLimit } from "./RateLimit";
 
 const SCHEMA = {
     body: {
@@ -34,7 +35,7 @@ export const MfaGuard =
     ) => {
         if (!req.user)
             throw new InternalServerError({
-                message: "Mfa Guard required Auth Guard before it",
+                message: "Mfa Guard requires Auth Guard before it",
             });
 
         const mfas = await MFA.findByUserId(req.user.id);
@@ -75,9 +76,6 @@ export const MfaGuard =
                 });
 
             req.mfa = mf_totp;
-            await mf_totp.updateDetails({
-                secret: "",
-            });
         } else if (mfa_type == "EMAIL") {
             if (!mf_email) {
                 throw new BadRequestError({
@@ -94,6 +92,14 @@ export const MfaGuard =
                     secret: "",
                 });
             } else {
+                await RateLimit({
+                    key_prefix: "mdlw-email-mfa-rate-limit",
+                    maxRequests: 5,
+                    windowSize: 3600,
+                    write_headers: false,
+                    error_message: "You have requested too many MFA emails",
+                })(req as Request, res, () => {});
+
                 const code = randomInt(6).toString();
 
                 const email = new Mail(Mail.TEMPLATE.MFA_EMAIL(code));

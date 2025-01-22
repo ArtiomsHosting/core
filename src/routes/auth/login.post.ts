@@ -83,9 +83,6 @@ export const handler: ApiHandler<typeof preHandlers> = async (req, res) => {
                 throw new BadRequestError({
                     message: "The multifactor authentication code is invalid",
                 });
-            await mf_totp.updateDetails({
-                secret: "",
-            });
         } else if (mfa_type == "EMAIL") {
             if (!mf_email) {
                 throw new BadRequestError({
