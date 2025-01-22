@@ -13,10 +13,10 @@ export default class FileRouter {
     routerPath: string;
     endpoints: FileObject[] = [];
     validMethods = ["get", "post", "put", "patch", "delete", "all"] as const;
-    private globalPath = path.join(__dirname, "../");
+    private globalPath = path.join(__dirname, "..").replace(/\\/g, "/");
 
     constructor(params: FileRouterParams) {
-        this.routerPath = path.join(params.path);
+        this.routerPath = path.join(params.path).replace(/\\/g, "/");
     }
 
     public build(dir: string = this.routerPath): this {
@@ -31,7 +31,7 @@ export default class FileRouter {
             }
 
             const { route, method, handler, preHandlers } = this.processFile(
-                filePath.replace(this.routerPath + "\\", "")
+                filePath.replace(/\\/g, "/").replace(this.routerPath + "/", "")
             );
 
             if (route && method && handler) {
@@ -71,8 +71,9 @@ export default class FileRouter {
     }
 
     private processFile(filePath: string): Partial<FileObject> {
-        const fp = filePath.split("\\");
+        const fp = filePath.replace("\\", "/").split("/");
         const fname = fp.pop();
+
         if (!fname) {
             console.warn(`Skipping file ${filePath} due to invalid method.`);
             return {};

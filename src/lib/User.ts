@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, User as UserModel } from "@prisma/client";
+import { Prisma, User as UserModel } from "@prisma/client";
 import db, { DatabaseManager } from "~/managers/DatabaseManager";
 import { Account } from "./Account";
 import { BadRequestError } from "~/managers/ErrorManager";
