@@ -1,0 +1,97 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  verified_email DateTime?
+  username       String    @unique
+  picture_url    String?
+
+  credentials       Credential?
+  mfa               MFA[]
+  accounts          Account[]
+  sessions          Session[]
+  VerificationToken VerificationToken[]
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model Credential {
+  user_id       Int    @id
+  password_hash String
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([user_id])
+}
+
+model Account {
+  id      Int @id @default(autoincrement())
+  user_id Int
+
+  provider      String
+  refresh_token String?
+  access_token  String?
+  expiresAt     DateTime
+  token_type    String?
+
+  User User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([provider, user_id])
+}
+
+model MFA {
+  user_id   Int
+  type      String // TTOP, EMAIL
+  secret    String
+  expiresAt DateTime?
+
+  User User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([user_id, type])
+}
+
+model Session {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  session_token String    @unique
+  expiresAt     DateTime?
+  user_ip       String?
+  user_agent    String?
+
+  User User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  issuedBy  String // CREDENTAIL, DISCORD, GOOGLE
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model VerificationToken {
+  id      Int    @id @default(autoincrement())
+  type    String
+  user_id Int
+  token   String
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime?
+  updatedAt DateTime  @updatedAt
+  createdAt DateTime  @default(now())
+}
