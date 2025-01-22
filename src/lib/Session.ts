@@ -102,7 +102,6 @@ export class Session {
         return {
             id: this.id,
             userId: this.userId,
-            sessionToken: this.sessionToken,
             expiresAt: this.expiresAt,
             userIp: this.userIp,
             userAgent: this.userAgent,

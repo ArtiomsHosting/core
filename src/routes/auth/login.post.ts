@@ -91,11 +91,13 @@ export const handler: ApiHandler<typeof preHandlers> = async (req, res) => {
                 });
             }
             if (mfa_code) {
-                if (!mf_email.isExpired() && mf_email.secret !== mfa_code)
+                if (mf_email.isExpired() || mf_email.secret !== mfa_code)
                     throw new BadRequestError({
                         message: "Wrong or expired MFA code",
                     });
+
                 await mf_email.updateDetails({
+                    expiresAt: null,
                     secret: "",
                 });
             } else {

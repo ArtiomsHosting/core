@@ -34,7 +34,8 @@ export class MFA {
     }
 
     isExpired(): boolean {
-        return this.expiresAt !== null && this.expiresAt <= new Date();
+        if (!this.expiresAt) return false;
+        else return this.expiresAt <= new Date();
     }
 
     async delete() {
@@ -98,7 +99,6 @@ export class MFA {
         return {
             userId: this.userId,
             type: this.type,
-            secret: this.secret,
             expiresAt: this.expiresAt,
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,

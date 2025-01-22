@@ -1,8 +1,10 @@
-import { PrismaClient, User as UserModel } from "@prisma/client";
+import { Prisma, PrismaClient, User as UserModel } from "@prisma/client";
 import db, { DatabaseManager } from "~/managers/DatabaseManager";
 import { Account } from "./Account";
 import { BadRequestError } from "~/managers/ErrorManager";
 import { compare, hash } from "~/utils/crypt";
+import { MFA } from "./MFA";
+import { Session } from "./Session";
 
 export class User {
     private userData: UserModel;
@@ -48,6 +50,27 @@ export class User {
             where: { session_token: token },
         });
         return !!sessions;
+    }
+
+    async fetchSelf(include: Prisma.UserInclude) {
+        const usr = await db.prisma.user.findUnique({
+            where: {
+                id: this.id,
+            },
+            include,
+        });
+        if (!usr) return null;
+        const { credentials, mfa, accounts, sessions, ...usrData } = usr;
+        if (credentials) credentials.password_hash = "shhhh, secret...";
+
+        return {
+            ...new User(usrData),
+            mfa: mfa ? mfa.map((x) => new MFA(x)) : undefined,
+            sessions: sessions
+                ? sessions.map((x) => new Session(x))
+                : undefined,
+            credentials,
+        };
     }
 
     async updateDetails(data: Partial<UserModel>) {
