@@ -12,6 +12,7 @@ export interface UpdateManagerParams {
     authToken?: string;
     updateCheckInterval: number;
     remoteName?: string;
+    updateDeps?: boolean;
 }
 
 export interface FileRouterParams {

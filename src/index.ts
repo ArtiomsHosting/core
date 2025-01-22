@@ -9,6 +9,7 @@ const updateManager = new UpdateManager({
     updateCheckInterval: Number(process.env.GITHUB_CHECK_INTERVAL || 0),
     authToken: process.env.GITHUB_TOKEN,
     remoteName: process.env.GITHUB_REMOTE_NAME,
+    updateDeps: process.env.GITHUB_UPDATE_DEPS == "true",
     repository: process.env.GITHUB_REPO!,
     branch: process.env.GITHUB_BRANCH,
 });

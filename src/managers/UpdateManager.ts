@@ -7,6 +7,7 @@ export default class UpdateManager {
     repository: string;
     branch: string;
     updateCheckInterval: number;
+    updateDeps: boolean;
     remoteName: string;
     currentCommitSign: string | undefined;
 
@@ -15,6 +16,8 @@ export default class UpdateManager {
         this.branch = params.branch || "main";
         this.remoteName = params.remoteName || "origin";
         this.updateCheckInterval = params.updateCheckInterval;
+        this.updateDeps =
+            params.updateDeps == undefined ? true : params.updateDeps;
 
         if (this.updateCheckInterval && params.autoUpdate) {
             setInterval(async () => {
@@ -35,9 +38,14 @@ export default class UpdateManager {
         if (cb) cb(updateData);
         if (cb) cb("Updated the source code. Updating dependencies...");
 
-        const [updateDeps, error2] = await tryCatch(this.updateDependencies());
-        if (error2) throw new Error(`Error updating dependencies. ${error2}`);
-        if (cb) cb(updateDeps);
+        if (this.updateDeps) {
+            const [updateDeps, error2] = await tryCatch(
+                this.updateDependencies()
+            );
+            if (error2)
+                throw new Error(`Error updating dependencies. ${error2}`);
+            if (cb) cb(updateDeps);
+        }
 
         console.log("Successful Update. Exiting the program");
         process.exit(0);
