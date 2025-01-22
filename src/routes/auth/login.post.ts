@@ -11,6 +11,8 @@ import { MFA } from "~/lib/MFA";
 import speakeasy from "speakeasy";
 import { randomInt } from "~/utils/gen";
 import { expiresAt, toMs } from "~/utils/time";
+import { RateLimit } from "~/middlewares/RateLimit";
+import { Request } from "express";
 
 const SCHEMA = {
     body: {
@@ -25,7 +27,16 @@ const SCHEMA = {
     },
 };
 
-export const preHandlers = [validate(SCHEMA)] as const;
+export const preHandlers = [
+    RateLimit({
+        key_prefix: "login-rate-limit",
+        maxRequests: 50,
+        windowSize: 3600,
+        write_headers: false,
+        error_message: "You have tried to login for too many times",
+    }),
+    validate(SCHEMA),
+] as const;
 
 export const handler: ApiHandler<typeof preHandlers> = async (req, res) => {
     const { email, password, mfa_type, mfa_code } = req.body;
@@ -90,6 +101,15 @@ export const handler: ApiHandler<typeof preHandlers> = async (req, res) => {
                     secret: "",
                 });
             } else {
+                await RateLimit({
+                    key_prefix: "login-email-mfa-rate-limit",
+                    maxRequests: 5,
+                    windowSize: 3600,
+                    write_headers: false,
+                    error_message:
+                        "You have requested the authentication code for too many times. Please contact support",
+                })(req as Request, res, () => {});
+
                 const code = randomInt(6).toString();
 
                 const email = new Mail(Mail.TEMPLATE.MFA_EMAIL(code));

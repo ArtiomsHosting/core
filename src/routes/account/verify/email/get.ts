@@ -2,9 +2,20 @@ import { VerificationToken } from "~/lib";
 import { Mail } from "~/lib/Mail";
 import { BadRequestError } from "~/managers/ErrorManager";
 import { AuthGuard } from "~/middlewares/AuthGuard";
+import { RateLimit } from "~/middlewares/RateLimit";
 import { ApiHandler } from "~/utils/types";
 
-export const preHandlers = [AuthGuard()] as const;
+export const preHandlers = [
+    AuthGuard(),
+    RateLimit({
+        key_prefix: "email-verify-rate-limit",
+        maxRequests: 5,
+        windowSize: 3600,
+        write_headers: false,
+        error_message:
+            "You have exceeded the ammount of times to request a verification email",
+    }),
+] as const;
 
 export const handler: ApiHandler<typeof preHandlers> = async (req, res) => {
     if (req.user.isEmailVerified())

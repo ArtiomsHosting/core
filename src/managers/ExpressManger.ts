@@ -1,10 +1,11 @@
-import express, { Express } from "express";
-import { ExpressManagerParams } from "~/utils/types";
-import FileRouter from "./FileRouter";
 import { errorHandler } from "~/middlewares/errorHandler";
+import { ExpressManagerParams } from "~/utils/types";
 import bodyParser from "~/middlewares/bodyParser";
+import express, { Express } from "express";
+import FileRouter from "./FileRouter";
+import "./RedisManager";
 import "express-async-errors";
-import { fetchIp } from "~/middlewares/fetchIp";
+import { RateLimit } from "~/middlewares/RateLimit";
 
 export default class ExpressManager {
     app: Express;
@@ -24,8 +25,15 @@ export default class ExpressManager {
         const endpoints = this.fileRouter.build().sort().getEndpoints();
 
         this.app.set("trust proxy", process.env.TRUSTED_PROXIES?.split(","));
+        this.app.use(
+            RateLimit({
+                windowSize: 60,
+                maxRequests: 100,
+                key_prefix: "rate-limit",
+                write_headers: true,
+            })
+        );
         this.app.use(bodyParser);
-        this.app.use(fetchIp);
 
         for (let endpoint of endpoints) {
             if (cb) cb(`Registering ${endpoint.method} ${endpoint.route}`);
