@@ -6,7 +6,6 @@ import tryCatch from "~/utils/tryCatch";
 export default class UpdateManager {
     repository: string;
     branch: string;
-    authToken: string | undefined;
     updateCheckInterval: number;
     remoteName: string;
     currentCommitSign: string | undefined;
@@ -15,7 +14,6 @@ export default class UpdateManager {
         this.repository = params.repository;
         this.branch = params.branch || "main";
         this.remoteName = params.remoteName || "origin";
-        this.authToken = params.authToken;
         this.updateCheckInterval = params.updateCheckInterval;
 
         if (this.updateCheckInterval && params.autoUpdate) {
@@ -58,26 +56,16 @@ export default class UpdateManager {
     };
 
     isUpToDate = async () => {
-        const headers = this.authToken
-            ? {
-                  headers: {
-                      Authorization: `Bearer ${this.authToken}`,
-                  },
-              }
-            : undefined;
+        try {
+            await runCmd("git fetch");
+            const diff = await runCmd(
+                `git log HEAD..${this.remoteName}/${this.branch} --oneline`
+            );
 
-        const response = await axios
-            .get(
-                `https://api.github.com/repos/${this.repository}/branches/${this.branch}`,
-                headers
-            )
-            .catch(() => {});
-
-        if (!response) return true;
-        const latestCommit = response.data.commit.sha;
-        this.currentCommitSign =
-            this.currentCommitSign || (await runCmd("git rev-parse HEAD"));
-
-        return latestCommit == this.currentCommitSign;
+            return diff.trim() === "";
+        } catch (err) {
+            console.error("Error cecking if up to date", err);
+            return true;
+        }
     };
 }
